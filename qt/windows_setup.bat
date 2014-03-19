@@ -1,0 +1,1 @@
+c:\Python27\Scripts\cxfreeze qt\nxg.py --target-dir dist --base-name Win32GUI --include-modules atexit,PySide.QtNetwork,paramiko,numpy,h5py,pycrypto
