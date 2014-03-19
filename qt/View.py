@@ -26,7 +26,8 @@ class MyMainWindow(QtGui.QMainWindow):
             password = self.ui.password.text()
             getEvents = self.ui.checkBox.isChecked()
             filenumbers = self.ui.filenumbers.text()
-            
+                        
             nxget = nexusget.NXGet(username, password, animal=animal)
+            return
             nxget.get_files(filenumbers, get_event_files=getEvents)
             nxget.t.close()

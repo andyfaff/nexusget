@@ -103,7 +103,7 @@ class NXGet():
         self.t.connect(username=username, password=password)
         self.sftp = paramiko.SFTPClient.from_transport(self.t)
 
-        self.animal = 'platypus' or animal
+        self.animal = animal or 'platypus'
 
         #let's get the cycle map, so we can locate files
         cycle_URL = (cycle_directory % self.animal) + '/data_map.txt'
@@ -135,13 +135,19 @@ class NXGet():
         for line in f:
             match = regex.search(line)
             if match:
-                temp, stamp, size, path = line.split(' ')
-                path = path.split('\n')[0]
-                filename = os.path.basename(path)
-                self.mapped_files[int(match.group(1))] = {'filename': filename,
-                                                          'path': path,
-                                                          'timestamp': stamp,
-                                                          'size': size}
+                try:
+                    temp, stamp, size, path = line.split(' ')
+                    path = path.split('\n')[0]
+                    filename = os.path.basename(path)
+                    number = int(match.group(1))
+                    self.mapped_files[number] = {'filename': filename,
+                                                 'path': path,
+                                                 'timestamp': stamp,
+                                                 'size': size}
+                except (ValueError):
+                    #some files have space in path, but these wont be
+                    #nx.hdf
+                    continue
 
     def _get_event_file(self, nexusnumber):
         """
