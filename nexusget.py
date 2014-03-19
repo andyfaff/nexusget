@@ -10,13 +10,14 @@ import getpass
 import sys
 import argparse
 import h5py
+from stat import S_ISDIR
 
 URL = 'scp.nbi.ansto.gov.au'
 port = 22
 
 cycle_directory = '/experiments/%s/data/cycle'
 current_directory = '/experiments/%s/data/current'
-hsdata_directory = '/experiments/%s/hsdata'
+hsdata_directory = '/experiment_hsdata/%s/hsdata'
 
 animals = {'platypus': 'PLP',
            'quokka': 'QKK',
@@ -36,7 +37,6 @@ def _expand_range(file_numbers):
     >>>_expand_range('112-114, 222, 223, 1223-1225')
     [112, 113, 114, 222, 223, 1223, 1224, 1225]
     '''
-
     individuals = list()
     entries = file_numbers.split(',')
     for entry in entries:
@@ -49,6 +49,37 @@ def _expand_range(file_numbers):
             individuals.append([int(entry)])
 
     return set([item for sublist in individuals for item in sublist])
+
+
+def isdir(path, sftp):
+    """See if a path is a directory on an SFTP server"""
+    try:
+        return S_ISDIR(sftp.stat(path).st_mode)
+    except IOError:
+        #Path does not exist, so by definition not a directory
+        return False
+
+
+def sftp_get_recursive(source, dest, sftp):
+    """A recursive FTP downloader"""
+    original_dir = os.getcwd()
+
+    if not os.path.isdir(dest):
+        os.mkdir(os.path.normpath(dest))
+        os.chdir(os.path.normpath(dest))
+
+    items = sftp.listdir(source)
+    for item in items:
+        if isdir(os.path.join(source, item),
+                 sftp):
+            sftp_get_recursive(os.path.join(source, item),
+                               os.path.join(dest, item),
+                               sftp)
+        else:
+            sftp.get(os.path.join(source, item),
+                     os.path.join(dest, item))
+
+    os.chdir(original_dir)
 
 
 class NXGet():
@@ -118,7 +149,20 @@ class NXGet():
             by nexusnumber
         """
         fname = ('%s%07d.nx.hdf') % (animals[self.animal],
-                                     number)
+                                     nexusnumber)
+        with h5py.File(fname, 'r') as f:
+            DAQ_dirname = f['/entry1/instrument/detector/daq_dirname'].value[0]
+
+        try:
+            hsdata_dir = (hsdata_directory) % self.animal
+            self.sftp.lstat(os.path.join(hsdata_dir, DAQ_dirname))
+            sftp_get_recursive(os.path.join(hsdata_dir, DAQ_dirname),
+                               os.path.join(os.getcwd(), DAQ_dirname),
+                               self.sftp)
+
+        except (OSError, IOError):
+            pass
+
         return
 
     def get_files(self, file_numbers, get_event_files=False):
@@ -144,7 +188,8 @@ class NXGet():
                     self.sftp.lstat(os.path.join(current_dir, fname))
                     self._get(os.path.join(current_dir, fname),
                               os.path.join(os.getcwd(), fname))
-                except OSError:
+                    print(fname)
+                except (OSError, IOError):
                     continue
 
             #retrieve eventfiles
@@ -167,7 +212,11 @@ if __name__ == "__main__":
                               "e.g. '1,2,3,4,5-10, 20-30'"))
     namespace = parser.parse_args()
 
-    user = namespace.u or input('Username: ')
+    try:
+        user = namespace.u or raw_input('Username: ')
+    except NameError:
+        user = namespace.u or input('Username: ')
+
     password = namespace.p or getpass.getpass()
     animal = namespace.a or 'platypus'
 
