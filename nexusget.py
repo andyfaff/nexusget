@@ -21,11 +21,12 @@ animals = {'platypus': 'PLP',
            'quokka': 'QKK',
            'echidna': 'ECH',
            'wombat': 'WBT',
-           'kookaburra': '',
+           'kookaburra': 'KKB',
            'kowari': 'KWW',
-           'bilby': '',
+           'bilby': 'BBY',
            'emu': 'EMU',
-           'pelican': ''}
+           'pelican': 'PLN',
+           'taipan': 'TPN'}
 
 
 def _expand_range(file_numbers):
@@ -57,7 +58,7 @@ class NXGet():
         """
         Parameters
         ----------
-        
+
         username: str
             Your username
         password: str
@@ -65,7 +66,7 @@ class NXGet():
         animal: str, optional
             The instrument you wish to retrieve data for
         """
-        
+
         self.t = paramiko.Transport((URL, port))
         self.t.connect(username=username, password=password)
         self.sftp = paramiko.SFTPClient.from_transport(self.t)
