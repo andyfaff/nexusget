@@ -12,12 +12,21 @@ class MyMainWindow(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.ui.password.setEchoMode(QtGui.QLineEdit.Password)
         self.ui.animal.addItems(nexusget.animals.keys())
-        
+
     @QtCore.Slot()
-    def on_pushButton_clicked(self):
-        
+    def on_setdirectory_clicked(self):
+
         directory = QtGui.QFileDialog.getExistingDirectory(caption='Store data',
                         options=QtGui.QFileDialog.ShowDirsOnly)
+        if len(directory):
+            os.chdir(directory)
+            self.ui.directory.setText(directory)
+
+    @QtCore.Slot()
+    def on_getfiles_clicked(self):
+
+        directory = self.ui.directory.text()
+
         if len(directory):
             #get data
             os.chdir(directory)
@@ -28,6 +37,5 @@ class MyMainWindow(QtGui.QMainWindow):
             filenumbers = self.ui.filenumbers.text()
                         
             nxget = nexusget.NXGet(username, password, animal=animal)
-            return
             nxget.get_files(filenumbers, get_event_files=getEvents)
             nxget.t.close()

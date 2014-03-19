@@ -122,7 +122,10 @@ class NXGet():
         """
             Perform the paramiko SFTP request
         """
-        self.sftp.get(source, dest)
+        try:
+            self.sftp.get(source, dest)
+        except (IOError, OSError):
+            return
 
     def _parse_data_map(self, f):
         """

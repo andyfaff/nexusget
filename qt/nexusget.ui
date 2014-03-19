@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>336</width>
-    <height>328</height>
+    <width>321</width>
+    <height>322</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,10 +29,10 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QPushButton" name="pushButton">
+    <item row="8" column="0">
+     <widget class="QPushButton" name="getfiles">
       <property name="text">
-       <string>Get</string>
+       <string>Get files</string>
       </property>
      </widget>
     </item>
@@ -53,6 +53,23 @@
       </property>
      </widget>
     </item>
+    <item row="6" column="0">
+     <widget class="QLineEdit" name="directory">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="placeholderText">
+       <string>directory</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QPushButton" name="setdirectory">
+      <property name="text">
+       <string>Set directory</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -60,7 +77,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>336</width>
+     <width>321</width>
      <height>22</height>
     </rect>
    </property>
@@ -73,7 +90,9 @@
   <tabstop>checkBox</tabstop>
   <tabstop>username</tabstop>
   <tabstop>password</tabstop>
-  <tabstop>pushButton</tabstop>
+  <tabstop>directory</tabstop>
+  <tabstop>setdirectory</tabstop>
+  <tabstop>getfiles</tabstop>
  </tabstops>
  <resources/>
  <connections/>
