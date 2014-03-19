@@ -9,6 +9,7 @@ import re
 import getpass
 import sys
 import argparse
+import h5py
 
 URL = 'scp.nbi.ansto.gov.au'
 port = 22
@@ -116,7 +117,9 @@ class NXGet():
             Get an event file corresponding to a nexus file, referred to
             by nexusnumber
         """
-        pass
+        fname = ('%s%07d.nx.hdf') % (animals[self.animal],
+                                     number)
+        return
 
     def get_files(self, file_numbers, get_event_files=False):
         """
@@ -132,10 +135,6 @@ class NXGet():
                 self._get(info['path'],
                           os.path.join(os.getcwd(),
                                        info['filename']))
-
-                #retrieve eventfiles
-                if get_event_files:
-                    self._get_event_file(number)
             else:
             #if may be in the current data directory
                 current_dir = current_directory % self.animal
@@ -147,6 +146,11 @@ class NXGet():
                               os.path.join(os.getcwd(), fname))
                 except OSError:
                     continue
+
+            #retrieve eventfiles
+            if get_event_files:
+                self._get_event_file(number)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download NeXus files.')
