@@ -150,8 +150,12 @@ class NXGet():
         """
         fname = ('%s%07d.nx.hdf') % (animals[self.animal],
                                      nexusnumber)
-        with h5py.File(fname, 'r') as f:
-            DAQ_dirname = f['/entry1/instrument/detector/daq_dirname'].value[0]
+        entry = '/entry1/instrument/detector/daq_dirname'
+        try:
+            with h5py.File(fname, 'r') as f:
+                DAQ_dirname = f[entry].value[0]
+        except (IOError, AttributeError):
+            return
 
         try:
             hsdata_dir = (hsdata_directory) % self.animal
@@ -159,7 +163,6 @@ class NXGet():
             sftp_get_recursive(os.path.join(hsdata_dir, DAQ_dirname),
                                os.path.join(os.getcwd(), DAQ_dirname),
                                self.sftp)
-
         except (OSError, IOError):
             pass
 
