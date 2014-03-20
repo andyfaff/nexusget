@@ -5,6 +5,7 @@ import os
 import os.path
 import sys
 
+
 class MyMainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
@@ -24,8 +25,9 @@ class MyMainWindow(QtGui.QMainWindow):
     @QtCore.Slot()
     def on_setdirectory_clicked(self):
 
-        directory = QtGui.QFileDialog.getExistingDirectory(caption='Store data',
-                        options=QtGui.QFileDialog.ShowDirsOnly)
+        directory = QtGui.QFileDialog.getExistingDirectory(
+                                        caption='Store data',
+                                        options=QtGui.QFileDialog.ShowDirsOnly)
         if len(directory):
             os.chdir(directory)
             self.ui.directory.setText(directory)
@@ -43,10 +45,11 @@ class MyMainWindow(QtGui.QMainWindow):
             password = self.ui.password.text()
             getEvents = self.ui.checkBox.isChecked()
             filenumbers = self.ui.filenumbers.text()
-                        
+
             nxget = nexusget.NXGet(username, password, animal=animal)
             nxget.get_files(filenumbers, get_event_files=getEvents)
             nxget.t.close()
+
 
 class EmittingStream(QtCore.QObject):
     # a class for rewriting stdout to a console window
