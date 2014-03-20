@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'qt/nexusget.ui'
+# Form implementation generated from reading ui file 'nexusget.ui'
 #
-# Created: Thu Mar 20 10:01:39 2014
+# Created: Thu Mar 20 14:10:53 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(321, 322)
+        MainWindow.resize(345, 437)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -29,6 +29,9 @@ class Ui_MainWindow(object):
         self.password = QtGui.QLineEdit(self.centralwidget)
         self.password.setObjectName("password")
         self.gridLayout.addWidget(self.password, 5, 0, 1, 1)
+        self.setdirectory = QtGui.QPushButton(self.centralwidget)
+        self.setdirectory.setObjectName("setdirectory")
+        self.gridLayout.addWidget(self.setdirectory, 7, 0, 1, 1)
         self.animal = QtGui.QComboBox(self.centralwidget)
         self.animal.setObjectName("animal")
         self.gridLayout.addWidget(self.animal, 1, 0, 1, 1)
@@ -39,17 +42,14 @@ class Ui_MainWindow(object):
         self.directory.setEnabled(False)
         self.directory.setObjectName("directory")
         self.gridLayout.addWidget(self.directory, 6, 0, 1, 1)
-        self.setdirectory = QtGui.QPushButton(self.centralwidget)
-        self.setdirectory.setObjectName("setdirectory")
-        self.gridLayout.addWidget(self.setdirectory, 7, 0, 1, 1)
+        self.history = QtGui.QPlainTextEdit(self.centralwidget)
+        self.history.setObjectName("history")
+        self.gridLayout.addWidget(self.history, 9, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar()
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 321, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 345, 22))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.filenumbers.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "List of NX numbers, e.g. 123, 124, 130-140", None, QtGui.QApplication.UnicodeUTF8))
         self.getfiles.setText(QtGui.QApplication.translate("MainWindow", "Get files", None, QtGui.QApplication.UnicodeUTF8))
         self.password.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Password", None, QtGui.QApplication.UnicodeUTF8))
+        self.setdirectory.setText(QtGui.QApplication.translate("MainWindow", "Set directory", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox.setText(QtGui.QApplication.translate("MainWindow", "Get Event Mode", None, QtGui.QApplication.UnicodeUTF8))
         self.directory.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.setdirectory.setText(QtGui.QApplication.translate("MainWindow", "Set directory", None, QtGui.QApplication.UnicodeUTF8))
 

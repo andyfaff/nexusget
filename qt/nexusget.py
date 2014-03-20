@@ -124,7 +124,8 @@ class NXGet():
         """
         try:
             self.sftp.get(source, dest)
-        except (IOError, OSError):
+        except (IOError, OSError) as e:
+            print(e.message)
             return
 
     def _parse_data_map(self, f):
@@ -147,10 +148,10 @@ class NXGet():
                                                  'path': path,
                                                  'timestamp': stamp,
                                                  'size': size}
-                except (ValueError):
+                except (ValueError) as e:
                     #some files have space in path, but these wont be
                     #nx.hdf
-                    continue
+                    print(e.message)
 
     def _get_event_file(self, nexusnumber):
         """
@@ -163,7 +164,8 @@ class NXGet():
         try:
             with h5py.File(fname, 'r') as f:
                 DAQ_dirname = f[entry].value[0]
-        except (IOError, AttributeError):
+        except (IOError, AttributeError) as e:
+            print(e.message)
             return
 
         try:
@@ -172,7 +174,8 @@ class NXGet():
             sftp_get_recursive(os.path.join(hsdata_dir, DAQ_dirname),
                                os.path.join(os.getcwd(), DAQ_dirname),
                                self.sftp)
-        except (OSError, IOError):
+        except (OSError, IOError) as e:
+            print(e.message)
             pass
 
         return
@@ -187,10 +190,10 @@ class NXGet():
         for number in numbers:
             if number in self.mapped_files:
                 info = self.mapped_files[number]
-                print((info['filename']))
                 self._get(info['path'],
                           os.path.join(os.getcwd(),
                                        info['filename']))
+                print((info['filename']))
             else:
             #if may be in the current data directory
                 current_dir = current_directory % self.animal
@@ -201,7 +204,8 @@ class NXGet():
                     self._get(os.path.join(current_dir, fname),
                               os.path.join(os.getcwd(), fname))
                     print(fname)
-                except (OSError, IOError):
+                except (OSError, IOError) as e:
+                    print(e.message)
                     continue
 
             #retrieve eventfiles
