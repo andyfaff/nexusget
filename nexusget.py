@@ -70,13 +70,13 @@ def sftp_get_recursive(source, dest, sftp):
 
     items = sftp.listdir(source)
     for item in items:
-        if isdir(os.path.join(source, item),
+        if isdir(source + '/' + item,
                  sftp):
-            sftp_get_recursive(os.path.join(source, item),
+            sftp_get_recursive(source + '/' + item,
                                os.path.join(dest, item),
                                sftp)
         else:
-            sftp.get(os.path.join(source, item),
+            sftp.get(source + '/' + item,
                      os.path.join(dest, item))
 
     os.chdir(original_dir)
@@ -168,8 +168,8 @@ class NXGet():
 
         try:
             hsdata_dir = (hsdata_directory) % self.animal
-            self.sftp.lstat(os.path.join(hsdata_dir, DAQ_dirname))
-            sftp_get_recursive(os.path.join(hsdata_dir, DAQ_dirname),
+            self.sftp.lstat(hsdata_dir + '/' +  DAQ_dirname)
+            sftp_get_recursive(hsdata_dir + '/' + DAQ_dirname,
                                os.path.join(os.getcwd(), DAQ_dirname),
                                self.sftp)
         except (OSError, IOError):
@@ -197,8 +197,8 @@ class NXGet():
                 fname = ('%s%07d.nx.hdf') % (animals[self.animal],
                                              number)
                 try:
-                    self.sftp.lstat(os.path.join(current_dir, fname))
-                    self._get(os.path.join(current_dir, fname),
+                    self.sftp.lstat(current_dir + '/' + fname)
+                    self._get(current_dir + '/' + fname,
                               os.path.join(os.getcwd(), fname))
                     print(fname)
                 except (OSError, IOError):

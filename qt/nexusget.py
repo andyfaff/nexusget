@@ -70,13 +70,13 @@ def sftp_get_recursive(source, dest, sftp):
 
     items = sftp.listdir(source)
     for item in items:
-        if isdir(os.path.join(source, item),
+        if isdir(source + '/' + item,
                  sftp):
-            sftp_get_recursive(os.path.join(source, item),
+            sftp_get_recursive(source + '/' + item,
                                os.path.join(dest, item),
                                sftp)
         else:
-            sftp.get(os.path.join(source, item),
+            sftp.get(source + '/' + item,
                      os.path.join(dest, item))
 
     os.chdir(original_dir)
@@ -124,8 +124,7 @@ class NXGet():
         """
         try:
             self.sftp.get(source, dest)
-        except (IOError, OSError) as e:
-            print(e.message)
+        except (IOError, OSError):
             return
 
     def _parse_data_map(self, f):
@@ -148,10 +147,10 @@ class NXGet():
                                                  'path': path,
                                                  'timestamp': stamp,
                                                  'size': size}
-                except (ValueError) as e:
+                except (ValueError):
                     #some files have space in path, but these wont be
                     #nx.hdf
-                    print(e.message)
+                    continue
 
     def _get_event_file(self, nexusnumber):
         """
@@ -164,18 +163,16 @@ class NXGet():
         try:
             with h5py.File(fname, 'r') as f:
                 DAQ_dirname = f[entry].value[0]
-        except (IOError, AttributeError) as e:
-            print(e.message)
+        except (IOError, AttributeError):
             return
 
         try:
             hsdata_dir = (hsdata_directory) % self.animal
-            self.sftp.lstat(os.path.join(hsdata_dir, DAQ_dirname))
-            sftp_get_recursive(os.path.join(hsdata_dir, DAQ_dirname),
+            self.sftp.lstat(hsdata_dir + '/' +  DAQ_dirname)
+            sftp_get_recursive(hsdata_dir + '/' + DAQ_dirname,
                                os.path.join(os.getcwd(), DAQ_dirname),
                                self.sftp)
-        except (OSError, IOError) as e:
-            print(e.message)
+        except (OSError, IOError):
             pass
 
         return
@@ -190,22 +187,21 @@ class NXGet():
         for number in numbers:
             if number in self.mapped_files:
                 info = self.mapped_files[number]
+                print((info['filename']))
                 self._get(info['path'],
                           os.path.join(os.getcwd(),
                                        info['filename']))
-                print((info['filename']))
             else:
             #if may be in the current data directory
                 current_dir = current_directory % self.animal
                 fname = ('%s%07d.nx.hdf') % (animals[self.animal],
                                              number)
                 try:
-                    self.sftp.lstat(os.path.join(current_dir, fname))
-                    self._get(os.path.join(current_dir, fname),
+                    self.sftp.lstat(current_dir + '/' + fname)
+                    self._get(current_dir + '/' + fname,
                               os.path.join(os.getcwd(), fname))
                     print(fname)
-                except (OSError, IOError) as e:
-                    print(e.message)
+                except (OSError, IOError):
                     continue
 
             #retrieve eventfiles
