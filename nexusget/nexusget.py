@@ -11,13 +11,8 @@ import sys
 import argparse
 import h5py
 from stat import S_ISDIR
+import ConfigParser
 
-URL = 'scp.nbi.ansto.gov.au'
-port = 22
-
-cycle_directory = '/experiments/%s/data/cycle'
-current_directory = '/experiments/%s/data/current'
-hsdata_directory = '/experiment_hsdata/%s/hsdata'
 
 animals = {'platypus': 'PLP',
            'quokka': 'QKK',
@@ -99,14 +94,22 @@ class NXGet():
             The instrument you wish to retrieve data for
         """
 
-        self.t = paramiko.Transport((URL, port))
+        DATAURL, HSDATAURL, port = self._get_config()
+
+        #the URL for nexus files
+        self.t = paramiko.Transport((DATAURL, port))
         self.t.connect(username=username, password=password)
         self.sftp = paramiko.SFTPClient.from_transport(self.t)
+
+        #the URL for event files
+        self.t_hs = paramiko.Transport((HSDATAURL, port))
+        self.t_hs.connect(username=username, password=password)
+        self.sftp_hs = paramiko.SFTPClient.from_transport(self.t_hs)
 
         self.animal = animal or 'platypus'
 
         #let's get the cycle map, so we can locate files
-        cycle_URL = (cycle_directory % self.animal) + '/data_map.txt'
+        cycle_URL = (self.cycle_directory % self.animal) + '/data_map.txt'
         data_map_filename = os.path.join(os.getcwd(), 'data_map.txt')
         self._get(cycle_URL, data_map_filename)
 
@@ -117,6 +120,7 @@ class NXGet():
 
     def __del__(self):
         self.t.close()
+        self.t_hs.close()
 
     def _get(self, source, dest):
         """
@@ -126,6 +130,52 @@ class NXGet():
             self.sftp.get(source, dest)
         except (IOError, OSError):
             return
+
+    def _get_config(self):
+        userdir = os.path.expanduser('~')
+        config_location = os.path.join(userdir, '.nexusget.cfg')
+
+        config = ConfigParser.ConfigParser()
+
+        if config.read(config_location):
+            DATAURL = config.get('URL', 'dataURL')
+            HSDATAURL = config.get('URL', 'hsdataURL')
+            port = config.getint('URL', 'port')
+            self.cycle_directory = config.get('DIRECTORY',
+                                              'cycle_directory')
+            self.current_directory = config.get('DIRECTORY',
+                                                'current_directory')
+            self.hsdata_directory = config.get('DIRECTORY',
+                                                'hsdata_directory')
+        else:
+            DATAURL = 'scp.nbi.ansto.gov.au'
+            HSDATAURL = 'scp.nbi.ansto.gov.au'
+            port = 22
+            self.cycle_directory = '/experiments/%s/data/cycle'
+            self.current_directory = '/experiments/%s/data/current'
+            self.hsdata_directory = '/experiment_hsdata/%s/hsdata'
+
+            config.add_section('URL')
+            config.set('URL', 'dataURL', DATAURL)
+            config.set('URL', 'hsdataURL', HSDATAURL)
+            config.set('URL', 'port', str(port))
+
+            config.add_section('DIRECTORY')
+            config.set('DIRECTORY',
+                       'cycle_directory',
+                       self.cycle_directory)
+            config.set('DIRECTORY',
+                       'current_directory',
+                       self.current_directory)
+            config.set('DIRECTORY',
+                       'hsdata_directory',
+                       self.hsdata_directory)
+
+            # Writing our configuration file to 'example.cfg'
+            with open(config_location, 'wb') as configfile:
+                config.write(configfile)
+
+        return (DATAURL, HSDATAURL, port)
 
     def _parse_data_map(self, f):
         """
@@ -152,30 +202,30 @@ class NXGet():
                     #nx.hdf
                     continue
 
-    def _get_event_file(self, nexusnumber):
+    def _get_event_files(self, nexusnumbers):
         """
-            Get an event file corresponding to a nexus file, referred to
-            by nexusnumber
+            Get event files corresponding to a nexus file, referred to
+            by nexusnumbers
         """
-        fname = ('%s%07d.nx.hdf') % (animals[self.animal],
-                                     nexusnumber)
-        entry = '/entry1/instrument/detector/daq_dirname'
-        try:
-            with h5py.File(fname, 'r') as f:
-                DAQ_dirname = f[entry].value[0]
-        except (IOError, AttributeError):
-            return
+        for nexusnumber in nexusnumbers:
+            fname = ('%s%07d.nx.hdf') % (animals[self.animal],
+                                         nexusnumber)
+            entry = '/entry1/instrument/detector/daq_dirname'
 
-        try:
-            hsdata_dir = (hsdata_directory) % self.animal
-            self.sftp.lstat(hsdata_dir + '/' +  DAQ_dirname)
-            sftp_get_recursive(hsdata_dir + '/' + DAQ_dirname,
-                               os.path.join(os.getcwd(), DAQ_dirname),
-                               self.sftp)
-        except (OSError, IOError):
-            pass
+            try:
+                with h5py.File(fname, 'r') as f:
+                    DAQ_dirname = f[entry].value[0]
+            except (IOError, AttributeError, KeyError):
+                continue
 
-        return
+            try:
+                hsdata_dir = (self.hsdata_directory) % self.animal
+                self.sftp_hs.lstat(hsdata_dir + '/' +  DAQ_dirname)
+                sftp_get_recursive(hsdata_dir + '/' + DAQ_dirname,
+                                   os.path.join(os.getcwd(), DAQ_dirname),
+                                   self.sftp_hs)
+            except (OSError, IOError):
+                pass
 
     def get_files(self, file_numbers, get_event_files=False):
         """
@@ -193,7 +243,7 @@ class NXGet():
                                        info['filename']))
             else:
             #if may be in the current data directory
-                current_dir = current_directory % self.animal
+                current_dir = self.current_directory % self.animal
                 fname = ('%s%07d.nx.hdf') % (animals[self.animal],
                                              number)
                 try:
@@ -204,9 +254,9 @@ class NXGet():
                 except (OSError, IOError):
                     continue
 
-            #retrieve eventfiles
-            if get_event_files:
-                self._get_event_file(number)
+        #retrieve eventfiles
+        if get_event_files:
+            self._get_event_files(numbers)
 
 
 if __name__ == "__main__":

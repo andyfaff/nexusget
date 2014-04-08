@@ -10,7 +10,7 @@ import py2app
 from distutils.core import *
 from distutils import sysconfig
 
-APP = ['qt/nxg.py']
+APP = ['nxg.py']
 PACKAGES= ['h5py']
 OPTIONS = {'argv_emulation': False,
            'packages': PACKAGES,
